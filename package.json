@@ -1,0 +1,31 @@
+{
+  "name": "proxycachingserver",
+  "description": "This server will proxy requests to a configurable endpoint and cache responses",
+  "main": "app.js",
+  "config": {
+    "cache": {
+      "cacheDuration": 60000,
+      "cacheSizeBytes": 100000,
+      "cacheSizeElements": 50
+    }
+  },
+  "defaults": {
+    "host": "www.google.com",
+    "devHost": "localhost",
+    "useDBCaching": false,
+    "port": 3000,
+    "sslPort": 3001
+  },
+  "dependencies": {
+    "colors": "1.1.x",
+    "express": "4.13.x",
+    "lodash": "^3.10.1",
+    "minimist": "^1.2.0",
+    "redis": "^2.1.0",
+    "request": "^2.64.0"
+  },
+  "devDependencies": {
+    "async": "^1.4.2",
+    "tape": "^4.2.1"
+  }
+}
