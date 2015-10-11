@@ -12,7 +12,13 @@ var colors = require('colors');
  * Arguments
  * options : Caching Options
  */
-var Cache = function (options) {
+var Cache = function (dataStore, options) {
+  if (!dataStore) {
+    throw new Error('A Data Store must be provided');
+  }
+
+  this.dataStore = dataStore;
+
   // Ensure default values are set
   options.cacheDuration = options.cacheDuration || 60000;
   options.cacheSizeBytes = options.cacheSizeBytes || 50000;
@@ -26,6 +32,9 @@ var Cache = function (options) {
     console.log(colors.cyan('---------- Garbage Collection ----------'));
     this.garbageCollection();
   }.bind(this), 60000);
+
+  // Call Garbage collection
+  this.garbageCollection();
 };
 
 /**
@@ -129,25 +138,38 @@ Cache.prototype.store = function (path, body, size) {
   return false;
 };
 
-// Interface Methods -- Not Implemented on base object
 Cache.prototype.insert = function (path, body) {
-  console.error(colors.red('ERROR: Insert Not implemented on Base Object'));
-  return false;
+  var data = {
+    body: body,
+    exp: Date.now() + this.options.cacheDuration
+  };
+  this.dataStore.insert(path, data);
 };
 
-Cache.prototype.find = function (path) {
-  console.error(colors.red('ERROR: Find Not implemented on Base Object'));
-  return false;
+Cache.prototype.find = function (path, cb) {
+  return this.dataStore.find(path, cb);
 };
 
 Cache.prototype.remove = function (path) {
-  console.error(colors.red('ERROR: Remove Not implemented on Base Object'));
-  return false;
+  return this.dataStore.remove(path);
 };
 
-Cache.prototype.garbageCollection = function (path) {
-  console.error(colors.red('ERROR: Garbage Collect Not implemented on Base Object'));
-  return false;
+/**
+ * Ensures stale caches are not kept in the database past expiration
+ *
+ * Loops through records, expiring all records that are stale
+ */
+Cache.prototype.garbageCollection = function () {
+  var currentTime = Date.now();
+  this.dataStore.each(function (error, path, cacheObj) {
+    if (error) {
+      console.error(colors.red('ERROR: Garbage collection reported error: ', error));
+      return false;
+    }
+    if (path && cacheObj && cacheObj.exp < currentTime) {
+      this.expire(path);
+    }
+  }.bind(this));
 };
 
 // Utility Function

@@ -45,7 +45,7 @@ Cache is a Base Object that is storage agnostic.  All of the logic for handling 
 
 ### Constructor
 * Assigns options to an instance variable.
-* Initialize storage counter
+* Initialize storage object
 * Starts the garbage collection method in an interval that runs every minute
 
 ### Prototype Methods
@@ -56,19 +56,18 @@ Cache is a Base Object that is storage agnostic.  All of the logic for handling 
 3. store
   a. Stores the cached object
   b. Handles all configuration checks (size/number)
-
-### 'Interface' Methods
-Cache requires its children to implement 4 functions:
-1. Insert
+4. insert
+  a. inserts into cache storage
 2. Find
+  a. finds cache record
 3. Remove
+  a. removes cache record
 4. Garbage Collection
+  a. removes stale cache from storage
 
-## MemoryCaching
-Extends Cache and implements storage functions. This storage type is a plain old javascript object {}.
+# Storage
+## In Memory Storage
+This storage object is a plain old javascript object {}.
 
-## RedisCaching
-Extends Cache and implements storage functions. This storage is stored into a database so it is persistent across executions.
-
-### Constructor
-Since it is persistent, it executes garbage collection on startup.
+## Redis Storage
+This storage object is stored into a database so it is persistent across executions.
