@@ -1,17 +1,18 @@
 var colors = require('colors');
 var request = require('request');
-// Cache Configuration
-var MemoryCaching = require('./cache/memoryCaching');
-var RedisCaching = require('./cache/redisCaching');
+var Cache = require('./cache/cache');
+var InMemoryStorage = require('./storage/inMemoryStorage');
+var RedisStorage = require('./storage/redisStorage');
 
 module.exports = function (host, options) {
   options = options || {};
   // Determine what type of caching that will be used
-  var cacheStore = options.useDBCaching ? new RedisCaching(options) : new MemoryCaching(options);
+  var storage = options.useDBCaching ? new RedisStorage() : new InMemoryStorage();
+  var cache = new Cache(storage, options);
 
   // Express Routing Function expression
   return function (req, res, next) {
-    cacheStore.get(req.url, function (error, cachedResponse) {
+    cache.get(req.url, function (error, cachedResponse) {
       if (error) {
         return next(error);
       }
@@ -31,7 +32,7 @@ module.exports = function (host, options) {
       }
 
       // This is actually the accepted solution to binaries in Request -- ADD MORE OPTS
-      if (/jpe?g|gif|png|ico|bmp|tiff/.test(req.url)) { 
+      if (/jpe?g|gif|png|ico|bmp|tiff/.test(req.url)) {
         encoding = null;
       } else {
         encoding = undefined;
@@ -75,7 +76,7 @@ module.exports = function (host, options) {
 
         // Successful response, attempt to cache
         if (response.statusCode >= 200 && response.statusCode < 299 && contentSize > 0) {
-          cacheStore.store(req.url, body, contentSize);
+          cache.store(req.url, body, contentSize);
         }
 
         // Set response headers
