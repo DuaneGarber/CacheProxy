@@ -1,3 +1,4 @@
+'use strict';
 /**
  * In Memory Storage
  *
@@ -6,7 +7,7 @@
  * Arguments
  * none
  */
-var InMemoryStorage = function () {
+function InMemoryStorage () {
   this.data = {};
 };
 
@@ -54,7 +55,8 @@ InMemoryStorage.prototype.remove = function (id) {
  * callback: function to complete upon record retrival
  */
 InMemoryStorage.prototype.each = function (callback) {
-  for (var key in this.data) {
+  let key;
+  for (key in this.data) {
     if (this.data.hasOwnProperty(key)) {
       callback(null, key, this.data[key]);
     }

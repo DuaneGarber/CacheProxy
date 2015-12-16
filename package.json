@@ -2,6 +2,9 @@
   "name": "proxycachingserver",
   "description": "This server will proxy requests to a configurable endpoint and cache responses",
   "main": "app.js",
+  "engines": {
+    "node": ">= 4.0.0"
+  },
   "config": {
     "cache": {
       "cacheDuration": 60000,

@@ -1,6 +1,8 @@
-var colors = require('colors');
-var redis = require('redis');
-var client = redis.createClient({return_buffers: true});
+'use strict';
+
+let colors = require('colors');
+let redis = require('redis');
+let client = redis.createClient({return_buffers: true});
 
 /**
  * Redis Storage
@@ -10,7 +12,7 @@ var client = redis.createClient({return_buffers: true});
  * Arguments
  * dbNum: 0-15 which db shard to use
  */
-var RedisStorage = function (dbNum) {
+function RedisStorage (dbNum) {
   client.on('ready', function (err) {
     if (err) {
       console.error(colors.red('ERROR: Redis is not READY', err));
@@ -78,7 +80,7 @@ RedisStorage.prototype.remove = function (id) {
  * callback: function to complete upon record retrival
  */
 RedisStorage.prototype.each = function (callback) {
-  var thisInstance = this;
+  let thisInstance = this;
   // Step 1: Get all of the keys
   client.keys('*',
     function (error, keys) {
