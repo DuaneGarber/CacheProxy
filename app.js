@@ -1,35 +1,37 @@
-var http = require('http');
-var https = require('https');
-var fs = require('fs');
-var _ = require('lodash');
-var express = require('express');
-var app = express();
-var proxyFactory = require('./proxy.js');
-var projectPkg = require(process.cwd() + '/package.json');
+'use strict';
+
+let http = require('http');
+let https = require('https');
+let fs = require('fs');
+let _ = require('lodash');
+let express = require('express');
+let app = express();
+let proxyFactory = require('./proxy.js');
+let projectPkg = require(process.cwd() + '/package.json');
 
 // Command Line Parser
-var argv = require('minimist')(process.argv.slice(2)) || {};
-var defaults = projectPkg.defaults || {};
-var host = argv.host || defaults.host;
-var devHost = argv.devHost || defaults.devHost;
-var useDBCaching = argv.useDBCaching || defaults.useDBCaching;
-var port = argv.port || defaults.port;
-var sslPort = argv.sslPort || defaults.sslPort;
-var sslOptions = {
+let argv = require('minimist')(process.argv.slice(2)) || {};
+let defaults = projectPkg.defaults || {};
+let host = argv.host || defaults.host;
+let devHost = argv.devHost || defaults.devHost;
+let useDBCaching = argv.useDBCaching || defaults.useDBCaching;
+let port = argv.port || defaults.port;
+let sslPort = argv.sslPort || defaults.sslPort;
+let sslOptions = {
   key: fs.readFileSync('./certs/ssl-key.pem'),
   cert: fs.readFileSync('./certs/ssl-cert.pem')
 };
-var config = projectPkg.config || {};
-var cacheOpts = config.cache || {};
+let config = projectPkg.config || {};
+let cacheOpts = config.cache || {};
 // Proxy configuration
-var proxyOptions = {
+let proxyOptions = {
   devHost: devHost,
   port: port,
   sslPort: sslPort,
   useDBCaching: useDBCaching
 };
 _.merge(proxyOptions, cacheOpts);
-var proxyMiddleware = proxyFactory(host, proxyOptions);
+let proxyMiddleware = proxyFactory(host, proxyOptions);
 
 // Route all GET though our middleware
 app.route('*')

@@ -1,4 +1,6 @@
-var colors = require('colors');
+'use strict';
+
+let colors = require('colors');
 
 /**
  * Cache Base Obj
@@ -12,7 +14,7 @@ var colors = require('colors');
  * Arguments
  * options : Caching Options
  */
-var Cache = function (dataStore, options) {
+function Cache (dataStore, options) {
   if (!dataStore) {
     throw new Error('A Data Store must be provided');
   }
@@ -28,10 +30,10 @@ var Cache = function (dataStore, options) {
   this.cachedElements = 0;
 
   // Execute Garbage Collection every 60 seconds
-  setInterval(function () {
+  setInterval( () => {
     console.log(colors.cyan('---------- Garbage Collection ----------'));
     this.garbageCollection();
-  }.bind(this), 60000);
+  }, 60000);
 
   // Call Garbage collection
   this.garbageCollection();
@@ -54,7 +56,7 @@ Cache.prototype.get = function (path, cb) {
     return cb(null, false);
   }
 
-  return this.find(path, function (error, cacheObj) {
+  return this.find(path, (error, cacheObj) => {
     if (error) {
       return cb(error);
     }
@@ -71,7 +73,7 @@ Cache.prototype.get = function (path, cb) {
 
     this.expire(path);
     return cb(null, false);
-  }.bind(this));
+  });
 };
 
 /**
@@ -139,7 +141,7 @@ Cache.prototype.store = function (path, body, size) {
 };
 
 Cache.prototype.insert = function (path, body) {
-  var data = {
+  let data = {
     body: body,
     exp: Date.now() + this.options.cacheDuration
   };
@@ -160,8 +162,8 @@ Cache.prototype.remove = function (path) {
  * Loops through records, expiring all records that are stale
  */
 Cache.prototype.garbageCollection = function () {
-  var currentTime = Date.now();
-  this.dataStore.each(function (error, path, cacheObj) {
+  let currentTime = Date.now();
+  this.dataStore.each( (error, path, cacheObj) => {
     if (error) {
       console.error(colors.red('ERROR: Garbage collection reported error: ', error));
       return false;
@@ -169,7 +171,7 @@ Cache.prototype.garbageCollection = function () {
     if (path && cacheObj && cacheObj.exp < currentTime) {
       this.expire(path);
     }
-  }.bind(this));
+  });
 };
 
 // Utility Function

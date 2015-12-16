@@ -1,14 +1,16 @@
+'use strict';
+
 var colors = require('colors');
-var request = require('request');
-var Cache = require('./cache/cache');
-var InMemoryStorage = require('./storage/inMemoryStorage');
-var RedisStorage = require('./storage/redisStorage');
+let request = require('request');
+let Cache = require('./cache/cache');
+let InMemoryStorage = require('./storage/inMemoryStorage');
+let RedisStorage = require('./storage/redisStorage');
 
 module.exports = function (host, options) {
   options = options || {};
   // Determine what type of caching that will be used
-  var storage = options.useDBCaching ? new RedisStorage() : new InMemoryStorage();
-  var cache = new Cache(storage, options);
+  let storage = options.useDBCaching ? new RedisStorage() : new InMemoryStorage();
+  let cache = new Cache(storage, options);
 
   // Express Routing Function expression
   return function (req, res, next) {
@@ -16,8 +18,8 @@ module.exports = function (host, options) {
       if (error) {
         return next(error);
       }
-      var protocol = null;
-      var encoding = null;
+      let protocol = null;
+      let encoding = null;
 
       // If we have a cached response send it immediately
       if (cachedResponse) {
@@ -50,7 +52,7 @@ module.exports = function (host, options) {
         gzip: true,
         followRedirect: false
       }, function (error, response, body) {
-        var contentSize = 0;
+        let contentSize = 0;
 
         if (error) {
           console.error(colors.red('ERROR: Request failed with Error ', error));
@@ -89,7 +91,7 @@ module.exports = function (host, options) {
   function handleRedirects (res, response) {
     // if we are redirecting within the host replace with local url
     if (response.headers && response.headers.location && response.headers.location.indexOf(host) > -1) {
-      var loc = response.headers.location;
+      let loc = response.headers.location;
       if (loc.indexOf('https') > -1) {
         loc = loc.replace(host, options.devHost + ':' + options.sslPort);
       } else {
