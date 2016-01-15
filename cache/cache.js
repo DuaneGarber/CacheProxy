@@ -30,14 +30,14 @@ function Cache (dataStore, options) {
   this.cachedElements = 0;
 
   // Execute Garbage Collection every 60 seconds
-  setInterval( () => {
+  setInterval(() => {
     console.log(colors.cyan('---------- Garbage Collection ----------'));
     this.garbageCollection();
   }, 60000);
 
   // Call Garbage collection
   this.garbageCollection();
-};
+}
 
 /**
  * Basic Cache Object Getter
@@ -50,29 +50,31 @@ function Cache (dataStore, options) {
  * cachedObj : If found in the store
  * false : If not found or Error Occurred
  */
-Cache.prototype.get = function (path, cb) {
-  if (!path) {
-    missingPath();
-    return cb(null, false);
-  }
-
-  return this.find(path, (error, cacheObj) => {
-    if (error) {
-      return cb(error);
+Cache.prototype.get = function (path) {
+  return new Promise((resolve, reject) => {
+    if (!path) {
+      missingPath();
+      return resolve(false);
     }
 
-    if (!cacheObj) {
-      return cb(null, false);
-    }
+    this.find(path, (error, cacheObj) => {
+      if (error) {
+        return reject(error);
+      }
 
-    // 2 Options: cache is fresh/stale
-    if (Date.now() < cacheObj.exp) {
-      console.log(colors.magenta('Returning Cached Response for ' + path));
-      return cb(null, cacheObj.body);
-    }
+      if (!cacheObj) {
+        return resolve(false);
+      }
 
-    this.expire(path);
-    return cb(null, false);
+      // 2 Options: cache is fresh/stale
+      if (Date.now() < cacheObj.exp) {
+        console.log(colors.magenta('Returning Cached Response for ' + path));
+        return resolve(cacheObj.body);
+      }
+
+      this.expire(path);
+      return resolve(false);
+    });
   });
 };
 
@@ -163,7 +165,7 @@ Cache.prototype.remove = function (path) {
  */
 Cache.prototype.garbageCollection = function () {
   let currentTime = Date.now();
-  this.dataStore.each( (error, path, cacheObj) => {
+  this.dataStore.each((error, path, cacheObj) => {
     if (error) {
       console.error(colors.red('ERROR: Garbage collection reported error: ', error));
       return false;
