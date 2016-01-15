@@ -1,13 +1,12 @@
 'use strict';
 
-let http = require('http');
-let https = require('https');
-let fs = require('fs');
-let _ = require('lodash');
-let express = require('express');
-let app = express();
-let proxyFactory = require('./proxy.js');
-let projectPkg = require(process.cwd() + '/package.json');
+const http = require('http');
+const https = require('https');
+const fs = require('fs');
+const express = require('express');
+const app = express();
+const proxyFactory = require('./proxy.js');
+const projectPkg = require(process.cwd() + '/package.json');
 
 // Command Line Parser
 let argv = require('minimist')(process.argv.slice(2)) || {};
@@ -30,14 +29,14 @@ let proxyOptions = {
   sslPort: sslPort,
   useDBCaching: useDBCaching
 };
-_.merge(proxyOptions, cacheOpts);
+
+Object.assign(proxyOptions, cacheOpts);
 let proxyMiddleware = proxyFactory(host, proxyOptions);
 
 // Route all GET though our middleware
 app.route('*')
   .get(proxyMiddleware);
 
-console.log('\nserver listening on ports HTTP: ' + port + ' - HTTPS: ' + sslPort + '\n');
+console.log(`server listening on ports HTTP: ${port} - HTTPS: ${sslPort}\n`);
 http.createServer(app).listen(port);
 https.createServer(sslOptions, app).listen(sslPort);
-
