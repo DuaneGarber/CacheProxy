@@ -22,7 +22,6 @@
   "dependencies": {
     "colors": "1.1.x",
     "express": "4.13.x",
-    "lodash": "^3.10.1",
     "minimist": "^1.2.0",
     "redis": "^2.1.0",
     "request": "^2.64.0"
