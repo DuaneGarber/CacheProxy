@@ -1,8 +1,11 @@
 'use strict';
 
-let colors = require('colors');
+const colors = require('colors');
+const bluebird = require('bluebird');
 let redis = require('redis');
-let client = redis.createClient({return_buffers: true});
+bluebird.promisifyAll(redis.RedisClient.prototype);
+bluebird.promisifyAll(redis.Multi.prototype);
+const client = redis.createClient({return_buffers: true});
 
 /**
  * Redis Storage
@@ -25,11 +28,11 @@ function RedisStorage (dbNum) {
   if (dbNum && dbNum >= 0 && dbNum <= 15) {
     client.select(dbNum);
   }
-};
+}
 
 /**
  * Insert into DB
- * 
+ *
  * Arguments:
  * id: hash key for storage
  * content: content to be stored in db
@@ -48,12 +51,15 @@ RedisStorage.prototype.insert = function (id, content) {
 /**
  * Finds record in DB
  *
- * Arguments: 
+ * Arguments:
  * id: hash key of record to be found
- * cb: callback of what to do with the results
+ *
+ * returns a Promise Object
  */
-RedisStorage.prototype.find = function (id, cb) {
-  return client.hgetall(id, cb);
+RedisStorage.prototype.find = function (id) {
+  return new Promise((resolve, reject) =>
+    client.hgetallAsync(id).then(cacheObj => resolve(cacheObj)).catch(error => reject(error))
+  );
 };
 
 /**
@@ -80,28 +86,67 @@ RedisStorage.prototype.remove = function (id) {
  * callback: function to complete upon record retrival
  */
 RedisStorage.prototype.each = function (callback) {
-  let thisInstance = this;
   // Step 1: Get all of the keys
   client.keys('*',
-    function (error, keys) {
+    (error, keys) => {
       if (error) {
         console.error(colors.red('ERROR: Failed to GET from Redis ', error));
         callback(error);
       }
       if (keys) {
         // Step 2: Loop through the keys
-        keys.forEach(function (key) {
+        keys.forEach(key => {
           // Step 3: find the record in the DB
-          thisInstance.find(key, function (error, obj) {
-            if (error) {
-              return callback(error);
-            }
-            return callback(null, key, obj);
-          });
+          this.find(key).then(
+              cacheObj => {
+                return {
+                  key,
+                  cacheObj
+                };
+              }
+            ).catch(
+              error => error
+          );
         });
       }
     }
   );
+};
+
+/**
+ * Loops through all of the records in the DB
+ *
+ * Generator that returns the next row for looping purposes
+ */
+RedisStorage.prototype.getIterator = function () {
+  return {
+    next: () => {
+      // Step 1: Get all of the keys
+      client.keysAync('*').then(
+        keys =>
+          // Step 2: Loop through the keys
+          keys.forEach(key => {
+            // Step 3: find the record in the DB
+            this.find(key).then(
+              cacheObj => {
+                return {
+                  key,
+                  cacheObj
+                };
+              }
+            ).catch(
+              error => error
+            );
+          }
+        )
+      ).catch(
+        error => {
+          console.error(colors.red('ERROR: Failed to GET from Redis ', error));
+          throw (error);
+        }
+      );
+    }
+  }
 };
 
 module.exports = RedisStorage;

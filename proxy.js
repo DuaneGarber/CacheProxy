@@ -15,7 +15,7 @@ module.exports = function (host, options) {
   // Express Routing Function expression
   return function (req, res, next) {
     cache.get(req.url).then(
-        function (cachedResponse) {
+        (cachedResponse) => {
           // If we have a cached response send it immediately
           if (cachedResponse) {
             return res.status(200).send(cachedResponse);
@@ -23,9 +23,7 @@ module.exports = function (host, options) {
           makeRequest(req, res, next);
         }
       ).catch(
-        function (error) {
-          return next(error);
-        }
+        (error) => next(error)
       );
   };
 
