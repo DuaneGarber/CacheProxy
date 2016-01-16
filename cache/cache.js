@@ -57,24 +57,26 @@ Cache.prototype.get = function (path) {
       return resolve(false);
     }
 
-    this.find(path, (error, cacheObj) => {
-      if (error) {
-        return reject(error);
-      }
+    this.find(path).then(
+      (cacheObj) => {
+        // Not a cache hit
+        if (!cacheObj) {
+          return resolve(false);
+        }
 
-      if (!cacheObj) {
+        // 2 Options: cache is fresh/stale
+        if (Date.now() < cacheObj.exp) {
+          console.log(colors.magenta('Returning Cached Response for ' + path));
+          return resolve(cacheObj.body);
+        }
+
+        // Expired Path
+        this.expire(path);
         return resolve(false);
       }
-
-      // 2 Options: cache is fresh/stale
-      if (Date.now() < cacheObj.exp) {
-        console.log(colors.magenta('Returning Cached Response for ' + path));
-        return resolve(cacheObj.body);
-      }
-
-      this.expire(path);
-      return resolve(false);
-    });
+    ).catch(
+      error => reject(error)
+    );
   });
 };
 

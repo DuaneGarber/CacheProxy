@@ -9,11 +9,11 @@
  */
 function InMemoryStorage () {
   this.data = {};
-};
+}
 
 /**
  * Insert into Object
- * 
+ *
  * Arguments:
  * id: hash key for storage
  * content: content to be stored in object
@@ -30,12 +30,14 @@ InMemoryStorage.prototype.insert = function (id, content) {
 /**
  * Finds record in object
  *
- * Arguments: 
+ * Arguments:
  * id: hash key of record to be found
- * cb: callback of what to do with the results
+ *
+ * Returns a Promise Object
  */
-InMemoryStorage.prototype.find = function (id, cb) {
-  return cb(null, this.data[id] || false);
+InMemoryStorage.prototype.find = function (id) {
+  // Error not possible, either its there or its not
+  return new Promise(resolve => resolve(this.data[id] || false));
 };
 
 /**
