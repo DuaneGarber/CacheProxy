@@ -5,7 +5,7 @@ const bluebird = require('bluebird');
 let redis = require('redis');
 bluebird.promisifyAll(redis.RedisClient.prototype);
 bluebird.promisifyAll(redis.Multi.prototype);
-const client = redis.createClient({return_buffers: true});
+const client = redis.createClient({return_buffers: false});
 
 /**
  * Redis Storage
@@ -58,7 +58,11 @@ RedisStorage.prototype.insert = function (id, content) {
  */
 RedisStorage.prototype.find = function (id) {
   return new Promise((resolve, reject) =>
-    client.hgetallAsync(id).then(cacheObj => resolve(cacheObj)).catch(error => reject(error))
+    client.hgetallAsync(id).then(
+        cacheObj => {
+          return resolve(cacheObj);
+        }
+      ).catch(error => reject(error))
   );
 };
 
@@ -98,12 +102,7 @@ RedisStorage.prototype.each = function (callback) {
         keys.forEach(key => {
           // Step 3: find the record in the DB
           this.find(key).then(
-              cacheObj => {
-                return {
-                  key,
-                  cacheObj
-                };
-              }
+              cacheObj => callback(null, key, cacheObj)
             ).catch(
               error => error
           );
@@ -111,42 +110,6 @@ RedisStorage.prototype.each = function (callback) {
       }
     }
   );
-};
-
-/**
- * Loops through all of the records in the DB
- *
- * Generator that returns the next row for looping purposes
- */
-RedisStorage.prototype.getIterator = function () {
-  return {
-    next: () => {
-      // Step 1: Get all of the keys
-      client.keysAync('*').then(
-        keys =>
-          // Step 2: Loop through the keys
-          keys.forEach(key => {
-            // Step 3: find the record in the DB
-            this.find(key).then(
-              cacheObj => {
-                return {
-                  key,
-                  cacheObj
-                };
-              }
-            ).catch(
-              error => error
-            );
-          }
-        )
-      ).catch(
-        error => {
-          console.error(colors.red('ERROR: Failed to GET from Redis ', error));
-          throw (error);
-        }
-      );
-    }
-  }
 };
 
 module.exports = RedisStorage;

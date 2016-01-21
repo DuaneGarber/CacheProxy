@@ -2,6 +2,10 @@
   "name": "proxycachingserver",
   "description": "This server will proxy requests to a configurable endpoint and cache responses",
   "main": "app.js",
+  "scripts": {
+    "start": "nodemon app.js",
+    "test": "tape testCaching.js"
+  },
   "engines": {
     "node": ">= 4.0.0"
   },
