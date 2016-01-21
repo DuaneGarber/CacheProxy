@@ -58,11 +58,7 @@ RedisStorage.prototype.insert = function (id, content) {
  */
 RedisStorage.prototype.find = function (id) {
   return new Promise((resolve, reject) =>
-    client.hgetallAsync(id).then(
-        cacheObj => {
-          return resolve(cacheObj);
-        }
-      ).catch(error => reject(error))
+    client.hgetallAsync(id).then(cacheObj => resolve(cacheObj)).catch(error => reject(error))
   );
 };
 
